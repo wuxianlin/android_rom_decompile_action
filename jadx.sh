@@ -13,5 +13,5 @@ rm -r out/rom
 
 ./tools/tools/jadx.sh out/rom-deodexed rom-decompiled-jadx
 
-find rom-decompiled-jadx -name classes*.dex | xargs rm
+find rom-decompiled-jadx -name classes*.dex | xargs -r rm
 
