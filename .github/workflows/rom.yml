@@ -51,7 +51,7 @@ jobs:
       run: |
         tar -czf rom-decompiled-jadx.tar.gz rom-decompiled-jadx
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v7
       with:
         name: rom-decompiled-jadx
         path: rom-decompiled-jadx.tar.gz
