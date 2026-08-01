@@ -7,6 +7,26 @@ on:
         description: 'ROM Url'
         required: true
         type: string
+      pack:
+        description: 'pack files'
+        default: true
+        required: true
+        type: boolean
+      strings:
+        description: 'pack strings of files'
+        default: true
+        required: true
+        type: boolean
+      jadx:
+        description: 'decompile using jadx'
+        default: false
+        required: true
+        type: boolean
+      apktool:
+        description: 'decompile using apktool'
+        default: false
+        required: true
+        type: boolean
 
 jobs:
   build:
@@ -41,17 +61,96 @@ jobs:
         if [ -f tools/requirements.txt ]; then pip install -r tools/requirements.txt; fi
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-    - name: Run
+    - name: Download
       run: |
-        bash jadx.sh
+        bash download.sh
       env:
         ROM_URL: ${{ inputs.romUrl }}
 
-    - name: archive
+    - name: Unpack
+      run: |
+        bash unpack.sh
+
+    - name: Archive Pack result
+      if: ${{ inputs.pack == true }}
+      run: |
+        tar -czf rom.tar.gz out/rom
+
+    - name: Upload Pack result
+      uses: actions/upload-artifact@v7
+      if: ${{ inputs.pack == true }}
+      with:
+        name: rom
+        path: rom.tar.gz 
+
+    - name: Clean pack result
+      if: ${{ inputs.pack == true }}
+      run: |
+        rm -rf rom.tar.gz 
+
+    - name: Run strings
+      if: ${{ inputs.strings == true }}
+      run: |
+        bash strings.sh
+
+    - name: Archive strings result
+      if: ${{ inputs.strings == true }}
+      run: |
+        tar -czf rom-strings.tar.gz rom-strings
+
+    - name: Upload strings result
+      uses: actions/upload-artifact@v7
+      if: ${{ inputs.strings == true }}
+      with:
+        name: rom-strings
+        path: rom-strings.tar.gz
+
+    - name: Clean strings result
+      if: ${{ inputs.strings == true }}
+      run: |
+        rm -rf rom-strings rom-strings.tar.gz  out/rom
+
+    - name: Run Jadx
+      if: ${{ inputs.jadx == true }}
+      run: |
+        bash jadx.sh
+
+    - name: Archive jadx result
+      if: ${{ inputs.jadx == true }}
       run: |
         tar -czf rom-decompiled-jadx.tar.gz rom-decompiled-jadx
 
-    - uses: actions/upload-artifact@v7
+    - name: Upload jadx result
+      uses: actions/upload-artifact@v7
+      if: ${{ inputs.jadx == true }}
       with:
         name: rom-decompiled-jadx
         path: rom-decompiled-jadx.tar.gz
+
+    - name: Clean jadx result
+      if: ${{ inputs.jadx == true }}
+      run: |
+        rm -rf rom-decompiled-jadx rom-decompiled-jadx.tar.gz
+
+    - name: Run Apktool
+      if: ${{ inputs.apktool == true }}
+      run: |
+        bash apktool.sh
+
+    - name: Archive apktool result
+      if: ${{ inputs.apktool == true }}
+      run: |
+        tar -czf rom-decompiled-apktool.tar.gz rom-decompiled-apktool
+
+    - name: Upload apktool result
+      uses: actions/upload-artifact@v7
+      if: ${{ inputs.apktool == true }}
+      with:
+        name: rom-decompiled-apktool
+        path: rom-decompiled-apktool.tar.gz
+
+    - name: Clean apktool result
+      if: ${{ inputs.apktool == true }}
+      run: |
+        rm -rf rom-decompiled-apktool rom-decompiled-apktool.tar.gz
+
